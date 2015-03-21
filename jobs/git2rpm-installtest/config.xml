@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.advancedqueue.AdvancedQueueSorterJobProperty plugin="PrioritySorter@2.9">
+      <useJobPriority>false</useJobPriority>
+      <priority>-1</priority>
+    </jenkins.advancedqueue.AdvancedQueueSorterJobProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
+      <autoRebuild>false</autoRebuild>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@1.8.4">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>GIT_URL</name>
+          <description></description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!/bin/bash
+#
+# requires:
+#  bash
+#
+set -e
+set -o pipefail
+set -x
+
+if ! [[ -n &quot;${GIT_URL}&quot; ]]; then
+  echo &quot;GIT_URL is empty.&quot; &gt;&amp;2
+  exit 1
+fi
+
+echo ${GIT_URL}
+
+repouri=${GIT_URL}
+reponame=${repouri##*/}    # https://github.com/foo/bar.git -&gt; bar.git
+reponame=${reponame%%.git} # bar.git -&gt; bar
+reponame=rpm4${reponame}   # bar -&gt; rpm4bar
+
+echo ${reponame}
+
+
+yum search ${reponame}
+yum info   ${reponame}
+
+sudo yum install -y ${reponame}
+yum info   ${reponame}
+
+rpm -qa    ${reponame}
+rpm -ql    ${reponame}
+
+sudo yum remove  -y ${reponame}
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.6"/>
+  </buildWrappers>
+</project>

@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.advancedqueue.AdvancedQueueSorterJobProperty plugin="PrioritySorter@2.9">
+      <useJobPriority>false</useJobPriority>
+      <priority>-1</priority>
+    </jenkins.advancedqueue.AdvancedQueueSorterJobProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.22">
+      <autoRebuild>false</autoRebuild>
+    </com.sonyericsson.rebuild.RebuildSettings>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@1.8.4">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>BASEURL</name>
+          <description></description>
+          <defaultValue>http://127.0.0.1/RPMS/</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!/bin/bash
+#
+# requires:
+#  bash
+#
+set -e
+set -o pipefail
+set -x
+
+cat &lt;&lt;EOS | sudo tee /etc/yum.repos.d/git2rpm.repo
+[git2rpm]
+name=git2rpm
+baseurl=$BASEURL
+gpgcheck=0
+EOS
+
+yum repolist --disablerepo=&apos;*&apos; --enablerepo=&apos;git2rpm&apos;
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.6"/>
+  </buildWrappers>
+</project>
