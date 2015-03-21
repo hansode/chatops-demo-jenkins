@@ -53,3 +53,7 @@ jobs/*/outOfOrderBuilds/*
 .config/*
 tmp/*
 node_modules/*
+
+#
+.rbenv/
+rpmbuild/
