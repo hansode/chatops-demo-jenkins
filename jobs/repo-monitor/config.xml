@@ -33,7 +33,7 @@
       <hudson.plugins.git.UserRemoteConfig>
         <name></name>
         <refspec></refspec>
-        <url>https://github.com/hansode/git2rpm</url>
+        <url>$GIT_URL</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
@@ -68,53 +68,35 @@
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-  <triggers/>
+  <triggers>
+    <hudson.triggers.SCMTrigger>
+      <spec>* * * * *</spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
       <command>env | sort
 </command>
     </hudson.tasks.Shell>
-    <hudson.tasks.Shell>
-      <command>#!/bin/bash
-#
-# requires:
-#  bash
-#
-set -e
-set -o pipefail
-set -x
-
-if ! [[ -x &quot;${WORKSPACE}/git2rpm&quot; ]]; then
-  echo &quot;file not found: ${WORKSPACE}/git2rpm&quot; &gt;&amp;2
-  exit 1
-fi
-
-mkdir -p /var/tmp/git2rpm
-cd       /var/tmp/git2rpm
-
-${WORKSPACE}/git2rpm ${GIT_URL}
-</command>
-    </hudson.tasks.Shell>
-    <hudson.tasks.Shell>
-      <command>#!/bin/bash
-#
-# requires:
-#  bash
-#
-set -e
-set -o pipefail
-set -x
-
-sudo rsync -avx ${HOME}/rpmbuild/RPMS /var/www/html/
-
-ls -la  /var/www/html/RPMS/
-cd      /var/www/html/RPMS/
-createrepo .
-</command>
-    </hudson.tasks.Shell>
   </builders>
-  <publishers/>
+  <publishers>
+    <hudson.plugins.parameterizedtrigger.BuildTrigger plugin="parameterized-trigger@2.26">
+      <configs>
+        <hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+          <configs>
+            <hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+              <properties>GIT_URL=$GIT_URL</properties>
+            </hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+          </configs>
+          <projects>git2rpm</projects>
+          <condition>SUCCESS</condition>
+          <triggerWithNoParameters>false</triggerWithNoParameters>
+        </hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+      </configs>
+    </hudson.plugins.parameterizedtrigger.BuildTrigger>
+  </publishers>
   <buildWrappers>
     <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.6"/>
   </buildWrappers>
