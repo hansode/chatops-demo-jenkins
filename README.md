@@ -39,6 +39,11 @@ Restart jenkins service.
 $ sudo service jenkins restart
 ```
 
+References
+----------
+
++ [Jenkins CI](http://jenkins-ci.org/)
+
 Contributing
 ------------
 
